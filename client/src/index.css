@@ -7,3 +7,17 @@ body,
 :root {
   height: 100%;
 }
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  @apply w-full border my-1 py-2 px-3 rounded-lg focus:outline-none;
+}
+
+button {
+  @apply bg-gray-300;
+}
+
+button.primary {
+  @apply bg-primary p-2 w-full text-white rounded-lg;
+}
