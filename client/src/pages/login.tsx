@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 
 import { loginSchema, LoginSchema } from "../constants/schema/loginSchema";
+import { UserContext } from "../user-context";
 
 export const LoginPage = () => {
+  const userContext = useContext(UserContext);
   const {
     register,
     handleSubmit,
@@ -14,10 +16,11 @@ export const LoginPage = () => {
   } = useForm<LoginSchema>({ resolver: zodResolver(loginSchema) });
   const [redirect, setRedirect] = useState(false);
 
-  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
+  const onSubmit: SubmitHandler<LoginSchema> = async (formData) => {
     try {
-      await axios.post("/login", data, { withCredentials: true });
-
+      const { data } = await axios.post("/login", formData);
+      userContext?.setUser(data);
+      
       setRedirect(true);
     } catch (error) {
       alert("Login Failed");

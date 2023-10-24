@@ -1,5 +1,6 @@
 import { Express } from "express";
 
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -15,6 +16,7 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = "airbnb-mern_19";
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
@@ -55,12 +57,14 @@ app.post("/login", async (req, res) => {
 
     if (passOk) {
       jwt.sign(
-        { email: userDoc.email, id: userDoc._id },
+        {
+          id: userDoc._id,
+        },
         jwtSecret,
         {},
         (err, token) => {
           if (err) throw err;
-          res.cookie("token", token).json();
+          res.cookie("token", token).json(userDoc);
         }
       );
     } else {
@@ -68,6 +72,21 @@ app.post("/login", async (req, res) => {
     }
   } else {
     res.status(422).json("Email and Password does not match");
+  }
+});
+
+app.get("/profile", (req, res) => {
+  const { token } = req.cookies;
+
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, async (err, user) => {
+      if (err) throw err;
+
+      const { _id, email, firstName, lastName } = await User.findById(user.id);
+      res.json({ _id, email, firstName, lastName });
+    });
+  } else {
+    res.json(null);
   }
 });
 
